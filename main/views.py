@@ -20,7 +20,6 @@ class TaskList(LoginRequiredMixin, ListView) :
     context_object_name = "tasks"
     
     def get_context_data(self, **kwargs) :
-        print("In get")
         context = super().get_context_data(**kwargs)
         context["tasks"] = context["tasks"].filter(user=self.request.user)
         context["count"] = context["tasks"].filter(complete=False).count()
@@ -39,10 +38,12 @@ class TaskList(LoginRequiredMixin, ListView) :
             prompt = context["tasks"].filter(
                 id = task_id
             )[0]
-            print(prompt)
-            llm_response = llm.prompt_the_llm(prompt)
+            description = context["tasks"].filter(
+                id = task_id
+            )[0].description
+            print(f"context: {description}")
+            llm_response = llm.prompt_the_llm(prompt, context=description)
         context["llm_response"] = llm_response
-        print(context['llm_response'])
         context["search_input"] = search_input
         
         return context
@@ -101,26 +102,26 @@ class AppRegister(FormView) :
         return super(AppRegister, self).get(*args, **kwargs)
     
 
-class LlmView(DetailView) :
-    model = Task
-    template_name = "main/llm_pg.html"
-    context_object_name = "task"
+# class LlmView(DetailView) :
+#     model = Task
+#     template_name = "main/llm_pg.html"
+#     context_object_name = "task"
     
-    def get_context_data(self, **kwargs) :
-        print("Get request received")
-        context = super().get_context_data(**kwargs)
-        # print(f"context['task']: {context['task']}")
-        task_id = self.request.GET.get("llm_submit") or ""
-        llm_response = ""
-        if task_id :
-            print(f"task_id is: {task_id}")
-            prompt = context["tasks"].filter(
-                id = task_id
-            )
-            print(prompt)
-            # llm_response = llm.prompt_the_llm()
-        context["llm_response"] = llm_response
+#     def get_context_data(self, **kwargs) :
+#         print("Get request received")
+#         context = super().get_context_data(**kwargs)
+#         # print(f"context['task']: {context['task']}")
+#         task_id = self.request.GET.get("llm_submit") or ""
+#         llm_response = ""
+#         if task_id :
+#             print(f"task_id is: {task_id}")
+#             prompt = context["tasks"].filter(
+#                 id = task_id
+#             )
+#             print(prompt)
+#             # llm_response = llm.prompt_the_llm()
+#         context["llm_response"] = llm_response
         
-        return context
+#         return context
 
 llm = LammaLLM()
