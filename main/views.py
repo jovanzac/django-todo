@@ -20,15 +20,29 @@ class TaskList(LoginRequiredMixin, ListView) :
     context_object_name = "tasks"
     
     def get_context_data(self, **kwargs) :
+        print("In get")
         context = super().get_context_data(**kwargs)
         context["tasks"] = context["tasks"].filter(user=self.request.user)
         context["count"] = context["tasks"].filter(complete=False).count()
         
+        # Search bar part
         search_input = self.request.GET.get("search") or ""
         if search_input :
             context["tasks"] = context["tasks"].filter(
                 title__icontains=search_input
                 )
+        # LLM part
+        task_id = self.request.GET.get("llm_submit") or ""
+        llm_response = ""
+        if task_id :
+            print(f"task_id is: {task_id}")
+            prompt = context["tasks"].filter(
+                id = task_id
+            )[0]
+            print(prompt)
+            llm_response = llm.prompt_the_llm(prompt)
+        context["llm_response"] = llm_response
+        print(context['llm_response'])
         context["search_input"] = search_input
         
         return context
@@ -93,9 +107,19 @@ class LlmView(DetailView) :
     context_object_name = "task"
     
     def get_context_data(self, **kwargs) :
+        print("Get request received")
         context = super().get_context_data(**kwargs)
-        print(f"context['task']: {context['task']}")
-        context["llm_response"] = llm.prompt_the_llm(context["task"])
+        # print(f"context['task']: {context['task']}")
+        task_id = self.request.GET.get("llm_submit") or ""
+        llm_response = ""
+        if task_id :
+            print(f"task_id is: {task_id}")
+            prompt = context["tasks"].filter(
+                id = task_id
+            )
+            print(prompt)
+            # llm_response = llm.prompt_the_llm()
+        context["llm_response"] = llm_response
         
         return context
 

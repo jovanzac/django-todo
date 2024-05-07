@@ -46,7 +46,10 @@
 
                 {% endif %}
                 <div style="float: right;">
-                    <input type="submit" class="suggest-llm" name="llm-button" value="&#10022;">
+                    <form id="llm{{task.id}}" method="GET" action="/">
+                        <input type="hidden" name="llm_submit" value={{task.id}}>
+                    </form>
+                    <a class="suggest-llm" href="javascript:document.getElementById('llm{{task.id}}').submit()">&#10022;</a>
                     <a class="delete-task" href={% url "delete-task" task.id %}>&#215;</a>
                 </div>
             </div>
@@ -58,7 +61,7 @@
 </div>
 
 <div class="llm-container">
-    Hello
+    {{llm_response}}
 </div>
 
 {% endblock content %}
